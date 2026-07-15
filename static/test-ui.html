@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gmail MCP Test UI</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    textarea { width: 100%; min-height: 120px; font-family: ui-monospace, monospace; }
+    button { margin: 0.25rem 0.25rem 0.25rem 0; padding: 0.4rem 0.8rem; }
+    pre { background: #f4f4f5; padding: 1rem; overflow: auto; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    label { display: block; margin-top: 0.75rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Gmail MCP Test UI</h1>
+  <p>Connect OAuth, then call Streamable HTTP tools. Tokens stay in localStorage.</p>
+  <div class="row">
+    <a href="/oauth/start"><button type="button">Connect with Google</button></a>
+    <button type="button" id="clear">Clear token</button>
+    <button type="button" id="health">Health</button>
+  </div>
+  <label>OAuth token JSON</label>
+  <textarea id="creds" placeholder='Paste token.json or connect via OAuth'></textarea>
+  <label>Tool</label>
+  <select id="tool">
+    <option>list_messages</option>
+    <option>get_message</option>
+    <option>send_message</option>
+    <option>list_labels</option>
+    <option>list_threads</option>
+    <option>list_drafts</option>
+  </select>
+  <label>Arguments JSON (without credentials)</label>
+  <textarea id="args">{"q": "is:inbox", "max_results": 5}</textarea>
+  <button type="button" id="call">Call tool</button>
+  <pre id="out"></pre>
+  <script>
+    const LS = "gmail_oauth_token";
+    const out = document.getElementById("out");
+    const credsEl = document.getElementById("creds");
+    const params = new URLSearchParams(location.search);
+    if (params.get("oauth")) {
+      fetch("/oauth/token?state=" + encodeURIComponent(params.get("oauth")))
+        .then(r => r.json())
+        .then(t => {
+          localStorage.setItem(LS, JSON.stringify(t));
+          credsEl.value = JSON.stringify(t, null, 2);
+          history.replaceState({}, "", "/test");
+        })
+        .catch(e => out.textContent = String(e));
+    } else if (localStorage.getItem(LS)) {
+      credsEl.value = localStorage.getItem(LS);
+    }
+    document.getElementById("clear").onclick = () => {
+      localStorage.removeItem(LS);
+      credsEl.value = "";
+    };
+    document.getElementById("health").onclick = async () => {
+      const r = await fetch("/health");
+      out.textContent = await r.text();
+    };
+    async function mcp(method, params) {
+      const init = await fetch("/mcp/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json, text/event-stream" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize",
+          params: { protocolVersion: "2024-11-05", capabilities: {}, clientInfo: { name: "gmail-test-ui", version: "1.0" } } })
+      });
+      const session = init.headers.get("Mcp-Session-Id");
+      await fetch("/mcp/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Mcp-Session-Id": session },
+        body: JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })
+      });
+      const call = await fetch("/mcp/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json, text/event-stream", "Mcp-Session-Id": session },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 2, method, params })
+      });
+      return call.text();
+    }
+    document.getElementById("call").onclick = async () => {
+      try {
+        const creds = JSON.parse(credsEl.value);
+        localStorage.setItem(LS, JSON.stringify(creds));
+        const args = JSON.parse(document.getElementById("args").value || "{}");
+        args.credentials_json = JSON.stringify(creds);
+        const tool = document.getElementById("tool").value;
+        out.textContent = await mcp("tools/call", { name: tool, arguments: args });
+      } catch (e) {
+        out.textContent = String(e);
+      }
+    };
+  </script>
+</body>
+</html>
