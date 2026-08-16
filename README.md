@@ -12,9 +12,11 @@ DatumBridge **tool-server** that exposes full Gmail capabilities over Streamable
 | Threads | `list_threads`, `get_thread`, `trash_thread`, `untrash_thread`, `delete_thread`, `modify_thread_labels` |
 | Drafts | `list_drafts`, `get_draft`, `create_draft`, `update_draft`, `send_draft`, `delete_draft` |
 | Labels | `list_labels`, `create_label`, `update_label`, `delete_label` |
-| Attachments | `download_attachment` (send/draft accept inline attachments) |
+| Attachments | `download_attachment` (send/draft accept inline attachments; empty `[]` / JSON array objects are coerced server-side) |
 
 Every tool requires **`credentials_path`** or **`credentials_json`** (OAuth token from Connect with Google / `scripts/oauth_connect.py`).
+
+**Production (DatumBridge Studio):** prefer the platform **credential vault** — connect Gmail under Studio **Account → Integrations**. The MCP registry injects `credentials_json` on execute; do not put tokens in workflow parameter mappings. See `dtb-agent-kit` ADR-0004.
 
 Registry id: **`mcpServer=gmail`**.
 

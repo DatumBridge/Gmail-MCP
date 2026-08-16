@@ -101,26 +101,64 @@ def _parse_label_ids(label_ids: Optional[str]) -> Optional[List[str]]:
     return result or None
 
 
+def _coerce_attachments_arg(value: Any) -> Optional[str]:
+    """
+    Accept planner-shaped attachments before/without strict string validation.
+
+    LLMs often emit attachments as [] or a JSON array object. Empty → omit;
+    non-empty list → JSON string for _parse_attachments.
+    """
+    if value is None:
+        return None
+    if isinstance(value, list):
+        if len(value) == 0:
+            return None
+        try:
+            return json.dumps(value)
+        except (TypeError, ValueError):
+            return None
+    if isinstance(value, str):
+        s = value.strip()
+        if not s or s in ("[]", "null", "None"):
+            return None
+        return value
+    return None
+
+
 def _parse_attachments(
-    attachments: Optional[str],
+    attachments: Any,
 ) -> Tuple[Optional[List[Dict[str, Any]]], Optional[dict]]:
     """
-    Parse attachments JSON string into a list of dicts.
+    Parse attachments from a JSON string or already-decoded list.
 
-    Expected JSON: array of {filename, content_base64, mime_type}.
+    Expected: array of {filename, content_base64, mime_type}.
     Returns (parsed_list, None) on success, or (None, error_dict) on validation/JSON error.
+    Empty / omitted attachments → (None, None).
     """
-    if attachments is None or not str(attachments).strip():
+    if attachments is None:
         return None, None
-    try:
-        parsed = json.loads(attachments)
-    except json.JSONDecodeError as e:
-        return None, {
-            "error_code": "VALIDATION_ERROR",
-            "error_message": f"Invalid attachments JSON: {e}",
-            "retryable": False,
-            "original_provider_error": None,
-        }
+    if isinstance(attachments, list):
+        if len(attachments) == 0:
+            return None, None
+        parsed = attachments
+    elif isinstance(attachments, str):
+        s = attachments.strip()
+        if not s or s in ("[]", "null", "None"):
+            return None, None
+        try:
+            parsed = json.loads(attachments)
+        except json.JSONDecodeError as e:
+            return None, {
+                "error_code": "VALIDATION_ERROR",
+                "error_message": f"Invalid attachments JSON: {e}",
+                "retryable": False,
+                "original_provider_error": None,
+            }
+    else:
+        # Coerce other shapes via the shared helper (e.g. unexpected types → omit).
+        coerced = _coerce_attachments_arg(attachments)
+        return _parse_attachments(coerced)
+
     if not isinstance(parsed, list):
         return None, {
             "error_code": "VALIDATION_ERROR",
@@ -129,6 +167,8 @@ def _parse_attachments(
             "retryable": False,
             "original_provider_error": None,
         }
+    if len(parsed) == 0:
+        return None, None
     return parsed, None
 
 
@@ -246,11 +286,12 @@ def send_message(
     ),
     cc: Optional[str] = Field(default=None, description="CC recipients"),
     bcc: Optional[str] = Field(default=None, description="BCC recipients"),
-    attachments: Optional[str] = Field(
+    attachments: Any = Field(
         default=None,
         description=(
-            "JSON array string of attachments: "
-            '[{"filename","content_base64","mime_type"}]'
+            "Attachments as a JSON array string or array of objects "
+            '[{"filename","content_base64","mime_type"}]. '
+            "Empty list / empty string / omitted means no attachments."
         ),
     ),
     thread_id: Optional[str] = Field(
@@ -309,11 +350,12 @@ def reply_message(
         default=False,
         description="If true, reply to all original recipients",
     ),
-    attachments: Optional[str] = Field(
+    attachments: Any = Field(
         default=None,
         description=(
-            "JSON array string of attachments: "
-            '[{"filename","content_base64","mime_type"}]'
+            "Attachments as a JSON array string or array of objects "
+            '[{"filename","content_base64","mime_type"}]. '
+            "Empty list / empty string / omitted means no attachments."
         ),
     ),
 ) -> SendMessageResponse:
@@ -834,11 +876,12 @@ def create_draft(
     body_html: Optional[str] = Field(default=None, description="HTML body"),
     cc: Optional[str] = Field(default=None, description="CC recipients"),
     bcc: Optional[str] = Field(default=None, description="BCC recipients"),
-    attachments: Optional[str] = Field(
+    attachments: Any = Field(
         default=None,
         description=(
-            "JSON array string of attachments: "
-            '[{"filename","content_base64","mime_type"}]'
+            "Attachments as a JSON array string or array of objects "
+            '[{"filename","content_base64","mime_type"}]. '
+            "Empty list / empty string / omitted means no attachments."
         ),
     ),
     thread_id: Optional[str] = Field(
@@ -888,11 +931,12 @@ def update_draft(
     body_html: Optional[str] = Field(default=None, description="HTML body"),
     cc: Optional[str] = Field(default=None, description="CC recipients"),
     bcc: Optional[str] = Field(default=None, description="BCC recipients"),
-    attachments: Optional[str] = Field(
+    attachments: Any = Field(
         default=None,
         description=(
-            "JSON array string of attachments: "
-            '[{"filename","content_base64","mime_type"}]'
+            "Attachments as a JSON array string or array of objects "
+            '[{"filename","content_base64","mime_type"}]. '
+            "Empty list / empty string / omitted means no attachments."
         ),
     ),
     thread_id: Optional[str] = Field(
