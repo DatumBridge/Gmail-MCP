@@ -215,7 +215,11 @@ def list_messages(
         description="Include SPAM and TRASH in results",
     ),
 ) -> MessageListResponse:
-    """List Gmail messages matching optional query and labels."""
+    """List Gmail messages matching optional query and labels.
+
+        Capabilities: gmail.list_messages
+Outputs: success
+        """
     logger.info("MCP: list_messages max_results=%s", max_results)
     try:
         if not credentials_path and not credentials_json:
@@ -257,7 +261,11 @@ def get_message(
         description="Message format: full, metadata, minimal, or raw",
     ),
 ) -> MessageResponse:
-    """Get a single Gmail message by ID."""
+    """Get a single Gmail message by ID.
+
+        Capabilities: gmail.get_message
+Outputs: success
+        """
     logger.info("MCP: get_message message_id=%s", message_id)
     try:
         if not credentials_path and not credentials_json:
@@ -279,10 +287,12 @@ def send_message(
     body_text: Optional[str] = Field(
         default=None,
         description="Plain-text body",
+        json_schema_extra={"x-datumbridge-encoding": "plain"},
     ),
     body_html: Optional[str] = Field(
         default=None,
         description="HTML body",
+        json_schema_extra={"x-datumbridge-encoding": "plain"},
     ),
     cc: Optional[str] = Field(default=None, description="CC recipients"),
     bcc: Optional[str] = Field(default=None, description="BCC recipients"),
@@ -293,6 +303,7 @@ def send_message(
             '[{"filename","content_base64","mime_type"}]. '
             "Empty list / empty string / omitted means no attachments."
         ),
+        json_schema_extra={"x-datumbridge-encoding": "base64", "x-datumbridge-item-field": "content_base64"},
     ),
     thread_id: Optional[str] = Field(
         default=None,
@@ -307,7 +318,11 @@ def send_message(
         description="References header value for threading",
     ),
 ) -> SendMessageResponse:
-    """Send a new Gmail message."""
+    """Send a new Gmail message.
+
+        Capabilities: gmail.send_message
+Outputs: success
+        """
     logger.info("MCP: send_message to=%s", to)
     try:
         if not credentials_path and not credentials_json:
@@ -344,8 +359,8 @@ def reply_message(
     message_id: str = Field(..., description="ID of the message to reply to"),
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
-    body_text: Optional[str] = Field(default=None, description="Plain-text reply body"),
-    body_html: Optional[str] = Field(default=None, description="HTML reply body"),
+    body_text: Optional[str] = Field(default=None, description="Plain-text reply body", json_schema_extra={"x-datumbridge-encoding": "plain"}),
+    body_html: Optional[str] = Field(default=None, description="HTML reply body", json_schema_extra={"x-datumbridge-encoding": "plain"}),
     reply_all: bool = Field(
         default=False,
         description="If true, reply to all original recipients",
@@ -357,9 +372,14 @@ def reply_message(
             '[{"filename","content_base64","mime_type"}]. '
             "Empty list / empty string / omitted means no attachments."
         ),
+    json_schema_extra={"x-datumbridge-encoding": "base64", "x-datumbridge-item-field": "content_base64"}
     ),
 ) -> SendMessageResponse:
-    """Reply to an existing Gmail message."""
+    """Reply to an existing Gmail message.
+
+        Capabilities: gmail.reply_message
+Outputs: success
+        """
     logger.info("MCP: reply_message message_id=%s", message_id)
     try:
         if not credentials_path and not credentials_json:
@@ -395,8 +415,9 @@ def forward_message(
     body_text: Optional[str] = Field(
         default=None,
         description="Optional note to prepend before the forwarded content",
+    json_schema_extra={"x-datumbridge-encoding": "plain"}
     ),
-    body_html: Optional[str] = Field(default=None, description="Optional HTML body"),
+    body_html: Optional[str] = Field(default=None, description="Optional HTML body", json_schema_extra={"x-datumbridge-encoding": "plain"}),
     cc: Optional[str] = Field(default=None, description="CC recipients"),
     bcc: Optional[str] = Field(default=None, description="BCC recipients"),
     include_original: bool = Field(
@@ -404,7 +425,11 @@ def forward_message(
         description="Include original message content in the forward",
     ),
 ) -> SendMessageResponse:
-    """Forward an existing Gmail message."""
+    """Forward an existing Gmail message.
+
+        Capabilities: gmail.forward_message
+Outputs: success
+        """
     logger.info("MCP: forward_message message_id=%s to=%s", message_id, to)
     try:
         if not credentials_path and not credentials_json:
@@ -436,7 +461,11 @@ def trash_message(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ActionResponse:
-    """Move a message to Trash."""
+    """Move a message to Trash.
+
+        Capabilities: gmail.trash_message
+Outputs: success
+        """
     logger.info("MCP: trash_message message_id=%s", message_id)
     try:
         if not credentials_path and not credentials_json:
@@ -461,7 +490,11 @@ def untrash_message(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ActionResponse:
-    """Restore a message from Trash."""
+    """Restore a message from Trash.
+
+        Capabilities: gmail.untrash_message
+Outputs: success
+        """
     logger.info("MCP: untrash_message message_id=%s", message_id)
     try:
         if not credentials_path and not credentials_json:
@@ -490,7 +523,11 @@ def delete_message(
     Permanently delete a message.
     Note: permanent delete may require a broader OAuth scope than gmail.modify
     (e.g. https://mail.google.com/).
-    """
+    
+
+        Capabilities: gmail.delete_message
+Outputs: success
+        """
     logger.info("MCP: delete_message message_id=%s", message_id)
     try:
         if not credentials_path and not credentials_json:
@@ -513,7 +550,11 @@ def mark_message_read(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ActionResponse:
-    """Mark a message as read (remove UNREAD label)."""
+    """Mark a message as read (remove UNREAD label).
+
+        Capabilities: gmail.mark_message_read
+Outputs: success
+        """
     logger.info("MCP: mark_message_read message_id=%s", message_id)
     try:
         if not credentials_path and not credentials_json:
@@ -538,7 +579,11 @@ def mark_message_unread(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ActionResponse:
-    """Mark a message as unread (add UNREAD label)."""
+    """Mark a message as unread (add UNREAD label).
+
+        Capabilities: gmail.mark_message_unread
+Outputs: success
+        """
     logger.info("MCP: mark_message_unread message_id=%s", message_id)
     try:
         if not credentials_path and not credentials_json:
@@ -571,7 +616,11 @@ def modify_message_labels(
         description="Comma-separated label IDs to remove",
     ),
 ) -> ActionResponse:
-    """Add and/or remove labels on a message."""
+    """Add and/or remove labels on a message.
+
+        Capabilities: gmail.modify_message_labels
+Outputs: success
+        """
     logger.info("MCP: modify_message_labels message_id=%s", message_id)
     try:
         if not credentials_path and not credentials_json:
@@ -622,7 +671,11 @@ def list_threads(
         description="Include SPAM and TRASH in results",
     ),
 ) -> ThreadListResponse:
-    """List Gmail threads matching optional query and labels."""
+    """List Gmail threads matching optional query and labels.
+
+        Capabilities: gmail.list_threads
+Outputs: success
+        """
     logger.info("MCP: list_threads max_results=%s", max_results)
     try:
         if not credentials_path and not credentials_json:
@@ -664,7 +717,11 @@ def get_thread(
         description="Message format within the thread: full, metadata, or minimal",
     ),
 ) -> ThreadResponse:
-    """Get a Gmail thread with its messages."""
+    """Get a Gmail thread with its messages.
+
+        Capabilities: gmail.get_thread
+Outputs: success
+        """
     logger.info("MCP: get_thread thread_id=%s", thread_id)
     try:
         if not credentials_path and not credentials_json:
@@ -683,7 +740,11 @@ def trash_thread(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ActionResponse:
-    """Move a thread to Trash."""
+    """Move a thread to Trash.
+
+        Capabilities: gmail.trash_thread
+Outputs: success
+        """
     logger.info("MCP: trash_thread thread_id=%s", thread_id)
     try:
         if not credentials_path and not credentials_json:
@@ -706,7 +767,11 @@ def untrash_thread(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ActionResponse:
-    """Restore a thread from Trash."""
+    """Restore a thread from Trash.
+
+        Capabilities: gmail.untrash_thread
+Outputs: success
+        """
     logger.info("MCP: untrash_thread thread_id=%s", thread_id)
     try:
         if not credentials_path and not credentials_json:
@@ -732,7 +797,11 @@ def delete_thread(
     """
     Permanently delete a thread.
     Note: permanent delete may require a broader OAuth scope than gmail.modify.
-    """
+    
+
+        Capabilities: gmail.delete_thread
+Outputs: success
+        """
     logger.info("MCP: delete_thread thread_id=%s", thread_id)
     try:
         if not credentials_path and not credentials_json:
@@ -763,7 +832,11 @@ def modify_thread_labels(
         description="Comma-separated label IDs to remove",
     ),
 ) -> ActionResponse:
-    """Add and/or remove labels on a thread."""
+    """Add and/or remove labels on a thread.
+
+        Capabilities: gmail.modify_thread_labels
+Outputs: success
+        """
     logger.info("MCP: modify_thread_labels thread_id=%s", thread_id)
     try:
         if not credentials_path and not credentials_json:
@@ -804,7 +877,11 @@ def list_drafts(
         description="Optional Gmail query to filter drafts",
     ),
 ) -> DraftListResponse:
-    """List Gmail drafts."""
+    """List Gmail drafts.
+
+        Capabilities: gmail.list_drafts
+Outputs: success
+        """
     logger.info("MCP: list_drafts max_results=%s", max_results)
     try:
         if not credentials_path and not credentials_json:
@@ -843,7 +920,11 @@ def get_draft(
         description="Draft message format: full, metadata, or minimal",
     ),
 ) -> DraftResponse:
-    """Get a Gmail draft by ID."""
+    """Get a Gmail draft by ID.
+
+        Capabilities: gmail.get_draft
+Outputs: success
+        """
     logger.info("MCP: get_draft draft_id=%s", draft_id)
     try:
         if not credentials_path and not credentials_json:
@@ -872,8 +953,8 @@ def create_draft(
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
     to: Optional[str] = Field(default=None, description="Recipient email address(es)"),
     subject: Optional[str] = Field(default=None, description="Draft subject"),
-    body_text: Optional[str] = Field(default=None, description="Plain-text body"),
-    body_html: Optional[str] = Field(default=None, description="HTML body"),
+    body_text: Optional[str] = Field(default=None, description="Plain-text body", json_schema_extra={"x-datumbridge-encoding": "plain"}),
+    body_html: Optional[str] = Field(default=None, description="HTML body", json_schema_extra={"x-datumbridge-encoding": "plain"}),
     cc: Optional[str] = Field(default=None, description="CC recipients"),
     bcc: Optional[str] = Field(default=None, description="BCC recipients"),
     attachments: Any = Field(
@@ -883,13 +964,18 @@ def create_draft(
             '[{"filename","content_base64","mime_type"}]. '
             "Empty list / empty string / omitted means no attachments."
         ),
+    json_schema_extra={"x-datumbridge-encoding": "base64", "x-datumbridge-item-field": "content_base64"}
     ),
     thread_id: Optional[str] = Field(
         default=None,
         description="Optional thread ID for the draft",
     ),
 ) -> DraftResponse:
-    """Create a new Gmail draft."""
+    """Create a new Gmail draft.
+
+        Capabilities: gmail.create_draft
+Outputs: success
+        """
     logger.info("MCP: create_draft")
     try:
         if not credentials_path and not credentials_json:
@@ -927,8 +1013,8 @@ def update_draft(
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
     to: Optional[str] = Field(default=None, description="Recipient email address(es)"),
     subject: Optional[str] = Field(default=None, description="Draft subject"),
-    body_text: Optional[str] = Field(default=None, description="Plain-text body"),
-    body_html: Optional[str] = Field(default=None, description="HTML body"),
+    body_text: Optional[str] = Field(default=None, description="Plain-text body", json_schema_extra={"x-datumbridge-encoding": "plain"}),
+    body_html: Optional[str] = Field(default=None, description="HTML body", json_schema_extra={"x-datumbridge-encoding": "plain"}),
     cc: Optional[str] = Field(default=None, description="CC recipients"),
     bcc: Optional[str] = Field(default=None, description="BCC recipients"),
     attachments: Any = Field(
@@ -938,13 +1024,18 @@ def update_draft(
             '[{"filename","content_base64","mime_type"}]. '
             "Empty list / empty string / omitted means no attachments."
         ),
+    json_schema_extra={"x-datumbridge-encoding": "base64", "x-datumbridge-item-field": "content_base64"}
     ),
     thread_id: Optional[str] = Field(
         default=None,
         description="Optional thread ID for the draft",
     ),
 ) -> DraftResponse:
-    """Update an existing Gmail draft."""
+    """Update an existing Gmail draft.
+
+        Capabilities: gmail.update_draft
+Outputs: success
+        """
     logger.info("MCP: update_draft draft_id=%s", draft_id)
     try:
         if not credentials_path and not credentials_json:
@@ -982,7 +1073,11 @@ def send_draft(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> SendMessageResponse:
-    """Send an existing Gmail draft."""
+    """Send an existing Gmail draft.
+
+        Capabilities: gmail.send_draft
+Outputs: success
+        """
     logger.info("MCP: send_draft draft_id=%s", draft_id)
     try:
         if not credentials_path and not credentials_json:
@@ -1006,7 +1101,11 @@ def delete_draft(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ActionResponse:
-    """Delete a Gmail draft."""
+    """Delete a Gmail draft.
+
+        Capabilities: gmail.delete_draft
+Outputs: success
+        """
     logger.info("MCP: delete_draft draft_id=%s", draft_id)
     try:
         if not credentials_path and not credentials_json:
@@ -1030,7 +1129,11 @@ def list_labels(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> LabelListResponse:
-    """List all Gmail labels."""
+    """List all Gmail labels.
+
+        Capabilities: gmail.list_labels
+Outputs: success
+        """
     logger.info("MCP: list_labels")
     try:
         if not credentials_path and not credentials_json:
@@ -1065,7 +1168,11 @@ def create_label(
         description="Label list visibility: labelShow, labelShowIfUnread, or labelHide",
     ),
 ) -> LabelResponse:
-    """Create a new Gmail label."""
+    """Create a new Gmail label.
+
+        Capabilities: gmail.create_label
+Outputs: success
+        """
     logger.info("MCP: create_label name=%s", name)
     try:
         if not credentials_path and not credentials_json:
@@ -1097,7 +1204,11 @@ def update_label(
         description="Label list visibility: labelShow, labelShowIfUnread, or labelHide",
     ),
 ) -> LabelResponse:
-    """Update an existing Gmail label."""
+    """Update an existing Gmail label.
+
+        Capabilities: gmail.update_label
+Outputs: success
+        """
     logger.info("MCP: update_label label_id=%s", label_id)
     try:
         if not credentials_path and not credentials_json:
@@ -1121,7 +1232,11 @@ def delete_label(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> ActionResponse:
-    """Delete a Gmail label."""
+    """Delete a Gmail label.
+
+        Capabilities: gmail.delete_label
+Outputs: success
+        """
     logger.info("MCP: delete_label label_id=%s", label_id)
     try:
         if not credentials_path and not credentials_json:
@@ -1147,7 +1262,11 @@ def download_attachment(
     credentials_path: Optional[str] = _CREDS_PATH_FIELD,
     credentials_json: Optional[str] = _CREDS_JSON_FIELD,
 ) -> AttachmentResponse:
-    """Download a message attachment as base64 content."""
+    """Download a message attachment as base64 content.
+
+        Capabilities: gmail.download_attachment
+Outputs: success
+        """
     logger.info(
         "MCP: download_attachment message_id=%s attachment_id=%s",
         message_id,
