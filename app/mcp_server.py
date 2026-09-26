@@ -40,6 +40,7 @@ from app.schemas.mcp_models import (
 )
 from app.services.gmail_service import GmailService
 from app.core.exceptions import GmailError
+from app.capability_bind import bind_declared_capabilities
 
 # Initialize MCP Server
 mcp = FastMCP(
@@ -1295,6 +1296,9 @@ Outputs: success
 # ============== HTTP App with Health Endpoint ==============
 
 # Create ASGI app for HTTP/SSE transport
+
+bind_declared_capabilities(mcp)
+
 _base_app = mcp.http_app()
 
 # Wrap to add /health and test UI - must pass MCP lifespan for Streamable HTTP session manager
