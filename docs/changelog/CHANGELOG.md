@@ -1,5 +1,23 @@
 # Changelog — Gmail MCP
 
+## 2026-10-08
+
+### Added
+
+- Per-tool Deep Agent guides in `registry_docs/<tool>.md`: parameter sample column, success field samples, `DOCUMENTED_ERROR_CODES`, untrusted-mailbox rules, and input/output cases. Regenerated with `python3 scripts/generate_registry_docs.py`.
+
+### Changed
+
+- Tool Registry Docs import (`x-datumbridge-docs`) now ships the Gmail-specific guides instead of the generic typical-call stub (which used a non-Gmail `invalid_argument` code).
+
+### Fixed
+
+- N/A
+
+### Removed
+
+- N/A
+
 ## 2026-07-15
 
 ### Added

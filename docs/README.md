@@ -10,6 +10,7 @@
 | [business/workflows.md](business/workflows.md) | OAuth → tool call |
 | [business/use-cases.md](business/use-cases.md) | When to use |
 | [technical/api-specification.md](technical/api-specification.md) | Tools & errors |
+| [`../registry_docs/`](../registry_docs/) | Per-tool Deep Agent guides (samples + error codes) |
 | [technical/configuration.md](technical/configuration.md) | Env vars |
 | [technical/integrations.md](technical/integrations.md) | Gmail API / Registry |
 | [technical/database-design.md](technical/database-design.md) | N/A v1 |

@@ -9,8 +9,9 @@
 ## Agent call
 
 1. Platform initializes MCP session on `/mcp/`
-2. `tools/list` then `tools/call` with credentials + args
-3. Service maps result or structured error
+2. `tools/list` includes `x-datumbridge-docs` from `registry_docs/<tool>.md`. Setup copies that markdown onto the tool Docs field.
+3. Deep Agent reads the parameter Sample column and the error-code table, then `tools/call` with user-supplied args only (no invented `credentials_json`).
+4. On `success: false`, Deep reads `error.error_code` and retries only when `retryable` is true (`AUTH_ERROR` once; `RATE_LIMIT` / `PROVIDER_ERROR` at most three times). Missing required args are JSON-RPC `-32602`, not that envelope.
 
 ## Reply
 

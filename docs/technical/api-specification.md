@@ -14,20 +14,36 @@
 
 ## MCP tools
 
-All tools accept `credentials_path` and/or `credentials_json` (**at least one** required).
+All tools accept `credentials_path` and/or `credentials_json` (**at least one** required). In Studio, the gateway injects `credentials_json`; Deep Agent must omit both fields.
+
+Deep Agent usage guides live in `registry_docs/<tool>.md` (parameter **Sample** column, success samples, error-code table, input/output cases). The server copies each file onto `tools/list` as `x-datumbridge-docs`. After deploy, run Tool Registry Setup or publish so the Docs field refreshes. Regenerate with `python3 scripts/generate_registry_docs.py`.
 
 Shared error shape when `success=false`:
 
 ```json
 {
-  "error_code": "CREDENTIALS_REQUIRED",
-  "error_message": "…",
-  "retryable": false,
-  "original_provider_error": null
+  "success": false,
+  "error": {
+    "error_code": "CREDENTIALS_REQUIRED",
+    "error_message": "…",
+    "retryable": false,
+    "original_provider_error": null
+  }
 }
 ```
 
-Common codes: `CREDENTIALS_REQUIRED`, `VALIDATION_ERROR`, `AUTH_ERROR`, `NOT_FOUND`, `PERMISSION_DENIED`, `RATE_LIMIT`, `PROVIDER_ERROR`, `UNKNOWN_ERROR`.
+| `error_code` | retryable | When |
+|---|---|---|
+| `CREDENTIALS_REQUIRED` | false | Neither `credentials_path` nor `credentials_json` after gateway inject |
+| `INVALID_CREDENTIALS` | false | Token JSON is not valid OAuth |
+| `VALIDATION_ERROR` | false | Bad args, attachment JSON/base64, empty label patch, oversize attachment |
+| `NOT_FOUND` | false | Google 404 |
+| `AUTH_ERROR` | true | Google 401 |
+| `PERMISSION_DENIED` | false | Google 403 / missing scope |
+| `RATE_LIMIT` | true | Google 429 / quota |
+| `PROVIDER_ERROR` | true | Google 5xx |
+| `UNKNOWN_ERROR` | false | Unmapped provider error |
+| `GMAIL_ERROR` | false | Generic wrapper |
 
 ### Messages
 

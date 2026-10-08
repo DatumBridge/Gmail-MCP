@@ -10,6 +10,7 @@
 
 - Discover via `initialize` → `tools/list`
 - Store `mcpServer=gmail` and base URL ending in `/mcp/` or host that appends `/mcp`
+- Each tool input schema carries `x-datumbridge-docs` (markdown from `registry_docs/<tool>.md`) and `x-datumbridge-capabilities`. Setup/publish moves Docs off the stored schema onto the tool Docs field so the planner catalog can use it without embedding the full guide in the JSON Schema.
 
 ## Sibling services
 

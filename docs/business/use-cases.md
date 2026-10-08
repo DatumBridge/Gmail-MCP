@@ -9,4 +9,6 @@
 | Label automation | `list_labels`, `create_label`, `modify_message_labels` |
 | Save attachment | `download_attachment` |
 
+Deep Agent must follow `registry_docs/<tool>.md` for argument samples and `error_code` handling.
+
 Not for: edge device mail, IMAP clients, or policy approval gates.

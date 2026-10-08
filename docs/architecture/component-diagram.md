@@ -15,4 +15,4 @@
                            Gmail API v1
 ```
 
-Supporting: `core/exceptions.py`, `schemas/mcp_models.py`.
+Supporting: `core/exceptions.py`, `schemas/mcp_models.py`, `registry_docs/<tool>.md` (bound as `x-datumbridge-docs`).

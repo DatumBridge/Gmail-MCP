@@ -8,7 +8,22 @@ Normalizes Google API errors into MCP-compatible format:
 - original_provider_error
 """
 
-from typing import Optional, Any
+from typing import Optional, Any, Tuple
+
+# Codes Deep Agent guides must document. Includes class codes plus
+# credential/provider literals used by gmail_service and mcp_server.
+DOCUMENTED_ERROR_CODES: Tuple[Tuple[str, bool], ...] = (
+    ("CREDENTIALS_REQUIRED", False),
+    ("INVALID_CREDENTIALS", False),
+    ("VALIDATION_ERROR", False),
+    ("NOT_FOUND", False),
+    ("AUTH_ERROR", True),
+    ("PERMISSION_DENIED", False),
+    ("RATE_LIMIT", True),
+    ("PROVIDER_ERROR", True),
+    ("UNKNOWN_ERROR", False),
+    ("GMAIL_ERROR", False),
+)
 
 
 class GmailError(Exception):

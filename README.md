@@ -45,7 +45,10 @@ Requires **Python 3.10+** for FastMCP (Docker image uses 3.11). Helper tests run
 
 ```bash
 python scripts/test_helpers.py -v
+python -m unittest discover -s tests -v
 ```
+
+Deep Agent tool guides: `registry_docs/<tool>.md` (samples + error codes). Regenerate with `python3 scripts/generate_registry_docs.py` after changing tool args or error codes.
 
 CLI token:
 
@@ -83,6 +86,7 @@ Studio / LangGraph → POST /mcp → mcp_server tools → GmailService → Gmail
 
 ```bash
 python scripts/test_helpers.py -v
+python -m unittest discover -s tests -v
 ```
 
 ## Project structure
@@ -95,6 +99,8 @@ gmail-mcp/
 ├── app/core/exceptions.py
 ├── app/schemas/mcp_models.py
 ├── scripts/
+├── registry_docs/   # Deep Agent guides (x-datumbridge-docs)
+├── tests/
 ├── static/test-ui.html
 ├── docs/
 ├── Dockerfile
